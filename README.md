@@ -1,1 +1,2 @@
 # computacao movel
+Introdução: O problema que temos de resolver é criar um jogo de perguntas e respostas de sim ou não, utilizando o arduino com algumas funções, além dos botões sim e não precisamos de um botão para pular de fase e outro que inicie ou encerre o jogo. Este jogo deverá ter sistema de som e uma interface feita com o LCD, mostrandos as perguntas e o score para o jogador.
