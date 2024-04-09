@@ -16,22 +16,6 @@ const String easyQuestions[] = {
     "O alfabeto tem 27 letras?",
     "Homem aranha foi o primeiro heroi da marvel?",
     "A FEI perdeu o RoboCup 2022?",
-};
-
-bool easyAnswers[10] = {
-    true,
-    true,
-    true,
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-};
-/*
-String mediumQuestions[10] = {
     "A queda do muro de Berlim foi em 89?",
     "Vargas tomou o poder em 1930?",
     "O menor osso humano fica no ouvido?",
@@ -42,21 +26,6 @@ String mediumQuestions[10] = {
     "Ayrton Senna morreu na Franca?",
     "A FEI foi fundada em 1947?",
     "O BR ganhou a copa do mundo em 98?",
-};
-bool mediumAnswers[10]{
-    true,
-    true,
-    true,
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-};
-
-String hardQuestions[10] = {
     "Steve Jobs foi CEO da Pixar?",
     "Ada Lovelace foi a primeira programadora?",
     "Ayrton Senna venceu 3 mundiais?",
@@ -67,9 +36,29 @@ String hardQuestions[10] = {
     "Cinderela a primeira princesa da Disney?",
     "Akira Toriyama faleceu dia 8 de marco de 2024?",
     "Bambam durou 1 minuto contra Popo?",
-}; */
-/*
-bool hardAnswers[10]{
+};
+
+bool easyAnswers[] = {
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
     true,
     true,
     true,
@@ -82,7 +71,8 @@ bool hardAnswers[10]{
     false,
 };
 
-String finalQuestions[3]{
+/*
+String finalQuestions[]{
     "Chico moedas e um homem integro?",
     "Corinthians e o melhor time de todos?",
     "Este projeto merece uma nota 10?",
@@ -92,8 +82,8 @@ bool finalAnswers[3]{
     true,
     true,
     true,
-}; */
-
+};
+*/
 bool gameActive = false;
 int questionIndex = 0;
 int skipsRemaining = 3;
@@ -118,9 +108,9 @@ void setup()
   pinMode(7, OUTPUT);        // green
   pinMode(13, OUTPUT);       // red
   lcd.begin(16, 2);
-  tone(A0, 294);
-  delay(500);
-  noTone(A0);
+  // tone(A0, 294);
+  // delay(500);
+  // noTone(A0);
   lcd.print("Bem vindo!");
   String questions[] = {"Pergunta 1", "Pergunta 2", "Pergunta 3"};
   attachInterrupt(digitalPinToInterrupt(2), start, RISING);
@@ -145,11 +135,11 @@ void loop()
     // Verificação dos botões
     if (digitalRead(8) == LOW)
     {
-      checkAnswer(true);
+      // checkAnswer(true);
     }
     else if (digitalRead(9) == LOW)
     {
-      checkAnswer(false);
+      // checkAnswer(false);
     }
     else if (digitalRead(10) == LOW && skipsRemaining > 0)
     {
@@ -175,7 +165,7 @@ void nextQuestion()
 {
 
   currentLevel = 0;
-  questionIndex = 0; // ou sua lógica para escolher o índice
+  questionIndex = 4; // ou sua lógica para escolher o índice
 
   // Exibir a pergunta
   displayQuestion(currentLevel, questionIndex);
@@ -188,11 +178,12 @@ void displayQuestion(int level, int index)
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(easyQuestions[index]);
-  int lengthOfQuestion = finalQuestions[index].length();
+  int lengthOfQuestion = easyQuestions[index].length();
   int scrollTimes = lengthOfQuestion > 16 ? lengthOfQuestion - 15 : 0;
 
   for (int positionCounter = 0; positionCounter < scrollTimes; positionCounter++)
   {
+    lcd.setCursor(0, 0);
     lcd.scrollDisplayLeft();
     delay(3000); // Ajuste este delay conforme necessário
   }
