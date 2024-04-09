@@ -83,14 +83,28 @@ bool hardAnswers[10]{
 
 String finalQuestion[3]{
   "Chico moedas e um homem integro?"
+  "Corinthians e o melhor time de todos?"
+  "Este projeto merece uma nota 10?"
 }
 bool finalAnswer[3]{
+  true,
+  true,
   true,
 }
 bool gameActive = false;
 int questionIndex = 0;
+int skipsRemaining = 3;
+int currentLevel = 0;
 int score = 0;
-int scrollPosition = 0;
+int correctAnswer = 0;
+unsigned long questionStartTime;
+const unsigned long questionTimeLimit = 100000;
+const unsigned long warningTime = 3000;
+bool isQuestionFullyDisplayed = false;
+unsigned long lastScrollTime = 0;
+bool isScrolling = false;
+int scrollPosition = 0; // Nova variável para controlar a posição da rolagem
+String question;
 
 void setup()
 {
@@ -110,19 +124,36 @@ void loop()
 
   if (gameActive)
   {
+    unsigned long currentTime = millis();
+    // Lógica do tempo de resposta
+    if (currentTime - questionStartTime > questionTimeLimit)
+    {
+      skipQuestion();
+    }
+    else if (currentTime - questionStartTime > questionTimeLimit - warningTime)
+    {
+      blinkWarning();
+    }
+
+    // Verificação dos botões
     if (digitalRead(8) == LOW)
     {
-      printf("Foi");
+      checkAnswer(true);
     }
     else if (digitalRead(9) == LOW)
     {
-      printf("Foi");
+      checkAnswer(false);
     }
-    else if (digitalRead(10) == LOW)
+    else if (digitalRead(10) == LOW && skipsRemaining > 0)
     {
-      nextQuestion();
+      skipQuestion();
     }
-  }
+
+    if (isQuestionFullyDisplayed)
+    {
+      showOptionsAndScore();
+    }
+  }  
 }
 
 void start()
@@ -135,17 +166,116 @@ void start()
 
 void nextQuestion()
 {
-  questionIndex = random(0, 5);
-  lcd.clear();
-  lcd.print(easyQuestions[0]);
-  delay(3000);
-  for (int positionCounter = 0; positionCounter < 16; positionCounter++)
+  if (correctAnswer >= 5)
   {
-    lcd.scrollDisplayLeft();
-    lcd.setCursor(0, 1);
-    delay(2000);
-    // lcd.print("Pontuacao: ");
-    // lcd.print(score);
-    // delay(150);
+    correctAnswer = 0;
+    currentLevel++;
+    if (currentLevel > 3)
+    {
+      endGame(true);
+      return;
+    }
   }
+  questionIndex = random(0, 10);
+  currentLevel = 0;
+
+  switch (currentLevel)
+  {
+  case 0:
+    question = easyQuestions[questionIndex];
+    break;
+  case 1:
+    question = mediumQuestions[questionIndex];
+    break;
+  case 2:
+    question = hardQuestions[questionIndex];
+    break;
+  case 3:
+    question = finalQuestions[random(0, 3)];
+    break;
+  }
+  lcd.clear();
+  lcd.print(question);
+  isQuestionFullyDisplayed = question.length() <= 16;
+  if (!isQuestionFullyDisplayed)
+  {
+    lastScrollTime = millis();
+    isScrolling = true;
+    scrollPosition = 0;
+  }
+  else
+  {
+    showOptionsAndScore(); // Chame aqui se a pergunta couber na tela sem rolagem
+  }
+}
+
+void checkAnswer(bool isYes)
+{
+  bool correctAnswer = false;
+  if (currentLevel < 3)
+  {
+    switch (currentLevel)
+    {
+    case 0:
+      correctAnswer = easyAnswers[questionIndex];
+      break;
+    case 1:
+      correctAnswer = mediumAnswers[questionIndex];
+      break;
+    case 2:
+      correctAnswer = hardAnswers[questionIndex];
+      break;
+    }
+
+    if ((isYes && correctAnswer) || (!isYes && !correctAnswer))
+    {
+      score += currentLevel + 1;
+      correctAnswer++;
+      nextQuestion();
+      // Tocar som de acerto
+    }
+    else
+    {
+      endGame(false); // Jogador errou a pergunta
+    }
+  }
+  else
+  {
+    // Lógica para a pergunta final
+    if (isYes == finalAnswers[random(0, 3)])
+    {
+      endGame(true); // Jogador venceu o jogo
+    }
+    else
+    {
+      endGame(false); // Jogador errou a pergunta final
+    }
+  }
+}
+
+void endGame(bool won)
+{
+  gameActive = false;
+  lcd.clear();
+  if (won)
+  {
+    lcd.print("Vitoria!");
+    playSound(4); // Som de vitória
+  }
+  else
+  {
+    lcd.print("Errado! Fim.");
+    playSound(3); // Som de erro
+  }
+  lcd.setCursor(0, 1);
+  lcd.print("Pontuacao: ");
+  lcd.print(score);
+  delay(2000);
+  lcd.clear();
+  lcd.print("Bem vindo!");
+}
+
+void playSound(int soundType)
+{
+  // soundType: 1 para acerto, 2 para pular, 3 para erro, 4 para vitória
 }
