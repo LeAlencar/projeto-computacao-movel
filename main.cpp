@@ -18,12 +18,6 @@ const String easyQuestions[] = {
     "A FEI perdeu o RoboCup 2022?",
 };
 
-const char easyQuestionsTeste[][50] PROGMEM = {
-    "Arduino tem 14 portas digitais?",
-    "Pedro Alvares Cabral descobriu o Brasil?",
-    "Baleia azul e o maior animal vivo no planeta?",
-
-};
 bool easyAnswers[10] = {
     true,
     true,
@@ -36,7 +30,7 @@ bool easyAnswers[10] = {
     false,
     false,
 };
-
+/*
 String mediumQuestions[10] = {
     "A queda do muro de Berlim foi em 89?",
     "Vargas tomou o poder em 1930?",
@@ -73,7 +67,8 @@ String hardQuestions[10] = {
     "Cinderela a primeira princesa da Disney?",
     "Akira Toriyama faleceu dia 8 de marco de 2024?",
     "Bambam durou 1 minuto contra Popo?",
-};
+}; */
+/*
 bool hardAnswers[10]{
     true,
     true,
@@ -97,7 +92,7 @@ bool finalAnswers[3]{
     true,
     true,
     true,
-};
+}; */
 
 bool gameActive = false;
 int questionIndex = 0;
@@ -190,41 +185,20 @@ void nextQuestion()
 
 void displayQuestion(int level, int index)
 {
-  String question;
-  if (level == 0)
-  {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    char buffer[50];
-    strcpy_P(buffer, (char *)pgm_read_word(&(easyQuestions[2]))); // Copia a string da memória de programa para o buffer
-    Serial.println(buffer);
-    lcd.print(buffer);
-  }
-  else if (level == 1)
-  {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(mediumQuestions[index]);
-  }
-  else if (level == 2)
-  {
-    lcd.print(hardQuestions[index]);
-  }
-  else if (level == 3)
-  {
-    lcd.print(finalQuestions[index]);
-    int lengthOfQuestion = finalQuestions[index].length();
-    int scrollTimes = lengthOfQuestion > 16 ? lengthOfQuestion - 15 : 0;
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(easyQuestions[index]);
+  int lengthOfQuestion = finalQuestions[index].length();
+  int scrollTimes = lengthOfQuestion > 16 ? lengthOfQuestion - 15 : 0;
 
-    for (int positionCounter = 0; positionCounter < scrollTimes; positionCounter++)
-    {
-      lcd.scrollDisplayLeft();
-      delay(3000); // Ajuste este delay conforme necessário
-    }
+  for (int positionCounter = 0; positionCounter < scrollTimes; positionCounter++)
+  {
+    lcd.scrollDisplayLeft();
+    delay(3000); // Ajuste este delay conforme necessário
   }
 }
 
-void checkAnswer(bool isYes)
+/* void checkAnswer(bool isYes)
 {
   bool correctAnswer = false;
   if (currentLevel < 3)
@@ -267,7 +241,7 @@ void checkAnswer(bool isYes)
     }
   }
 }
-
+ */
 void endGame(bool won)
 {
   gameActive = false;
