@@ -123,6 +123,9 @@ void setup()
   pinMode(7, OUTPUT);        // green
   pinMode(13, OUTPUT);       // red
   lcd.begin(16, 2);
+  tone(A0, 294);
+  delay(500);
+  noTone(A0);
   lcd.print("Bem vindo!");
   String questions[] = {"Pergunta 1", "Pergunta 2", "Pergunta 3"};
   attachInterrupt(digitalPinToInterrupt(2), start, RISING);
@@ -303,6 +306,7 @@ void skipQuestion()
 {
   skipsRemaining--;
   nextQuestion();
+  tone(A0, 294);
   // Tocar som de pular (usando pino de som)
 }
 
