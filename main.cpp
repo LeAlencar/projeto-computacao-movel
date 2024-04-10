@@ -5,6 +5,25 @@
 LiquidCrystal lcd(12, 11, 6, 5, 4, 3);
 volatile byte start_state = LOW;
 
+struct Question
+{
+  String question;
+  bool answer;
+  int level;
+  int points;
+};
+
+Question questions[9] = {
+    {"Arduino tem 14 portas digitais?", true, 1, 1},
+    {"Pedro Alvares Cabral descobriu o Brasil?", true, 1, 1},
+    {"Baleia azul e o maior animal vivo no planeta?", true, 1, 1},
+    {"A segunda guerra mundial acabou em 1945?", true, 1, 1},
+    {"As 3 leis da física foi criado por Newton?", true, 1, 1},
+    {"Windows parou de atualizar no 10?", true, 1, 1},
+    {"A lingua mais falada no mundo e ingles?", true, 1, 1},
+    {"O alfabeto tem 27 letras?", true, 1, 1},
+    {"Homem aranha foi o primeiro heroi da marvel?", true, 1, 1}};
+/*
 const String easyQuestions[] = {
     "Arduino tem 14 portas digitais?",
     "Pedro Alvares Cabral descobriu o Brasil?",
@@ -70,7 +89,7 @@ bool easyAnswers[] = {
     false,
     false,
 };
-
+ */
 /*
 String finalQuestions[]{
     "Chico moedas e um homem integro?",
@@ -84,19 +103,14 @@ bool finalAnswers[3]{
     true,
 };
 */
-bool gameActive = false;
+
 int questionIndex = 0;
 int skipsRemaining = 3;
 int currentLevel = 0;
 int score = 0;
-int correctAnswer = 0;
 unsigned long questionStartTime;
 const unsigned long questionTimeLimit = 100000;
 const unsigned long warningTime = 3000;
-bool isQuestionFullyDisplayed = false;
-unsigned long lastScrollTime = 0;
-bool isScrolling = false;
-int scrollPosition = 0; // Nova variável para controlar a posição da rolagem
 
 void setup()
 {
@@ -112,130 +126,81 @@ void setup()
   // delay(500);
   // noTone(A0);
   lcd.print("Bem vindo!");
-  String questions[] = {"Pergunta 1", "Pergunta 2", "Pergunta 3"};
-  attachInterrupt(digitalPinToInterrupt(2), start, RISING);
 }
 
 void loop()
 {
 
-  if (gameActive)
+  if (digitalRead(8) == LOW)
   {
-    unsigned long currentTime = millis();
-    // Lógica do tempo de resposta
-    if (currentTime - questionStartTime > questionTimeLimit)
-    {
-      skipQuestion();
-    }
-    else if (currentTime - questionStartTime > questionTimeLimit - warningTime)
-    {
-      blinkWarning();
-    }
-
-    // Verificação dos botões
-    if (digitalRead(8) == LOW)
-    {
-      // checkAnswer(true);
-    }
-    else if (digitalRead(9) == LOW)
-    {
-      // checkAnswer(false);
-    }
-    else if (digitalRead(10) == LOW && skipsRemaining > 0)
-    {
-      skipQuestion();
-    }
-
-    if (isQuestionFullyDisplayed)
-    {
-      showOptionsAndScore();
-    }
+    checkAnswer(true);
+  }
+  else if (digitalRead(9) == LOW)
+  {
+    checkAnswer(false);
+  }
+  else if (digitalRead(2) == LOW)
+  {
+    start();
+  }
+  else if (digitalRead(10) == LOW)
+  {
+    skipQuestion();
   }
 }
 
 void start()
 {
-
-  gameActive = true;
   score = 0;
+  questionIndex = 0;
+  skipsRemaining = 3;
   nextQuestion();
+  tone(A0, 1000, 500);
 }
 
 void nextQuestion()
 {
 
-  currentLevel = 0;
-  questionIndex = 4; // ou sua lógica para escolher o índice
-
-  // Exibir a pergunta
-  displayQuestion(currentLevel, questionIndex);
-  // delay(2000);
-  // showOptionsAndScore();
-}
-
-void displayQuestion(int level, int index)
-{
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(easyQuestions[index]);
-  int lengthOfQuestion = easyQuestions[index].length();
+  lcd.print(questions[questionIndex].question);
+  delay(1000);
+  int lengthOfQuestion = questions[questionIndex].question.length();
   int scrollTimes = lengthOfQuestion > 16 ? lengthOfQuestion - 15 : 0;
 
   for (int positionCounter = 0; positionCounter < scrollTimes; positionCounter++)
   {
     lcd.setCursor(0, 0);
     lcd.scrollDisplayLeft();
-    delay(3000); // Ajuste este delay conforme necessário
+    delay(200);
   }
+
+  delay(1000);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Pontos: ");
+  lcd.print(score);
+  lcd.setCursor(0, 1);
+  lcd.print("Pulos: ");
+  lcd.print(skipsRemaining);
 }
 
-/* void checkAnswer(bool isYes)
+void checkAnswer(bool isTrue)
 {
-  bool correctAnswer = false;
-  if (currentLevel < 3)
+  if (questions[questionIndex].answer == isTrue)
   {
-    switch (currentLevel)
-    {
-    case 0:
-      correctAnswer = easyAnswers[questionIndex];
-      break;
-    case 1:
-      correctAnswer = mediumAnswers[questionIndex];
-      break;
-    case 2:
-      correctAnswer = hardAnswers[questionIndex];
-      break;
-    }
-
-    if ((isYes && correctAnswer) || (!isYes && !correctAnswer))
-    {
-      score += currentLevel + 1;
-      correctAnswer++;
-      nextQuestion();
-      // Tocar som de acerto
-    }
-    else
-    {
-      endGame(false); // Jogador errou a pergunta
-    }
+    score += questions[questionIndex].points;
+    questionIndex++;
+    nextQuestion();
   }
   else
   {
-    // Lógica para a pergunta final
-    if (isYes == finalAnswers[random(0, 3)])
-    {
-      endGame(true); // Jogador venceu o jogo
-    }
-    else
-    {
-      endGame(false); // Jogador errou a pergunta final
-    }
+    endGame(false);
   }
 }
- */
+
 void endGame(bool won)
 {
-  gameActive = false;
   lcd.clear();
   if (won)
   {
@@ -245,6 +210,9 @@ void endGame(bool won)
   else
   {
     lcd.print("Errado! Fim.");
+    questionIndex = 0;
+    score = 0;
+    skipsRemaining = 3;
     playSound(3); // Som de erro
   }
   lcd.setCursor(0, 1);
@@ -270,18 +238,8 @@ void blinkWarning()
 void skipQuestion()
 {
   skipsRemaining--;
+  questionIndex++;
   nextQuestion();
   tone(A0, 294);
   // Tocar som de pular (usando pino de som)
-}
-
-void showOptionsAndScore()
-{
-  // Mostra "SIM", "NÃO" e a pontuação
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("SIM      NAO");
-  lcd.setCursor(0, 1);
-  lcd.print("Score: ");
-  lcd.print(score);
 }
