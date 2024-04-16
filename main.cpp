@@ -13,113 +13,54 @@ struct Question
   int points;
 };
 
-Question questions[9] = {
-    {"Arduino tem 14 portas digitais?", true, 1, 1},
-    {"Pedro Alvares Cabral descobriu o Brasil?", true, 1, 1},
-    {"Baleia azul e o maior animal vivo no planeta?", true, 1, 1},
-    {"A segunda guerra mundial acabou em 1945?", true, 1, 1},
-    {"As 3 leis da física foi criado por Newton?", true, 1, 1},
-    {"Windows parou de atualizar no 10?", true, 1, 1},
-    {"A lingua mais falada no mundo e ingles?", true, 1, 1},
-    {"O alfabeto tem 27 letras?", true, 1, 1},
-    {"Homem aranha foi o primeiro heroi da marvel?", true, 1, 1}};
-/*
-const String easyQuestions[] = {
-    "Arduino tem 14 portas digitais?",
-    "Pedro Alvares Cabral descobriu o Brasil?",
-    "Baleia azul e o maior animal vivo no planeta?",
-    "A segunda guerra mundial acabou em 1945?",
-    "As 3 leis da física foi criado por Newton?",
-    "Windows parou de atualizar no 10?",
-    "A lingua mais falada no mundo e ingles?",
-    "O alfabeto tem 27 letras?",
-    "Homem aranha foi o primeiro heroi da marvel?",
-    "A FEI perdeu o RoboCup 2022?",
-    "A queda do muro de Berlim foi em 89?",
-    "Vargas tomou o poder em 1930?",
-    "O menor osso humano fica no ouvido?",
-    "Steve Jobs faleceu em 2011?",
-    "Arduino foi criado em 2005?",
-    "O primeiro computador e de 1930?",
-    "A revolucao industrial foi no sec.XX",
-    "Ayrton Senna morreu na Franca?",
-    "A FEI foi fundada em 1947?",
-    "O BR ganhou a copa do mundo em 98?",
-    "Steve Jobs foi CEO da Pixar?",
-    "Ada Lovelace foi a primeira programadora?",
-    "Ayrton Senna venceu 3 mundiais?",
-    "A boneca barbie foi lancada em 59?",
-    "O homem pisou na lua em 69?",
-    "O tupi guarani e uma lingua oficial do BR?",
-    "O Brasil tem 3 liguas oficiais?",
-    "Cinderela a primeira princesa da Disney?",
-    "Akira Toriyama faleceu dia 8 de marco de 2024?",
-    "Bambam durou 1 minuto contra Popo?",
+Question questions[] = {
+    {"Arduino 14 portas digitais?", true, 1, 10},
+    {"Baleia azul>animal vivo?", true, 1, 10},
+    {"WW2 acabou em 45?", true, 1, 10},
+    {"Newton fez 3 leis fisica?", true, 1, 10},
+    {"Windows 10 final att?", false, 1, 10},
+    //{"Miranha marvel first hero?", false, 1, 10},
+    //{"FEI lost RoboCup 2022?", false, 1, 10},
+
+    {"Cold War acabou em 89?", true, 2, 20},
+    {"Menor osso e no ouvido?", true, 2, 20},
+    {"Arduino criado em 2005?", true, 2, 20},
+    {"Primeiro PC de 1930?", false, 2, 20},
+    {"Senna morreu na Franca?", false, 2, 20},
+    //{"FEI fundada em 47?", false, 2, 20},
+    //{"BR ganhou WorldCup 98?", false, 2, 20},
+
+    {"Steve Jobs foi CEO Pixar?", true, 3, 30},
+    {"Ada primeira programadora?", true, 3, 30},
+    {"Senna venceu 3 mundiais?", true, 3, 30},
+    {"Barbie foi lancada em 59?", true, 3, 30},
+    {"Tupi e lingua oficial?", false, 3, 30},
+    //{"Toriyama faleceu em 64?", false, 3, 30},
+    //{"BambamVSPopo foi 1min?", false, 3, 30},
+
+    //{"Chicoin=homem integro?", true, 4, 40},
+    //{"Corinthians best team?", true, 4, 40},
+
 };
 
-bool easyAnswers[] = {
-    true,
-    true,
-    true,
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-    true,
-    true,
-    true,
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-    true,
-    true,
-    true,
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-};
- */
-/*
-String finalQuestions[]{
-    "Chico moedas e um homem integro?",
-    "Corinthians e o melhor time de todos?",
-    "Este projeto merece uma nota 10?",
-};
-
-bool finalAnswers[3]{
-    true,
-    true,
-    true,
-};
-*/
-
+int contador = 0;
 int questionIndex = 0;
 int skipsRemaining = 3;
-int currentLevel = 0;
 int score = 0;
+int correctAnswersPerLevel[4] = {0, 0, 0, 0};
+bool gameActive = false;
 unsigned long questionStartTime;
-const unsigned long questionTimeLimit = 100000;
-const unsigned long warningTime = 3000;
+const unsigned long questionTimeLimit = 10000;
+const unsigned long warningTime = 7000;
 
 void setup()
 {
   Serial.begin(9600);
+  randomSeed(analogRead(0));
   pinMode(2, INPUT_PULLUP);  // btn 1
   pinMode(10, INPUT_PULLUP); // btn 2
   pinMode(9, INPUT_PULLUP);  // btn 3
   pinMode(8, INPUT_PULLUP);  // btn 4
-  pinMode(7, OUTPUT);        // green
   pinMode(13, OUTPUT);       // red
   lcd.begin(16, 2);
   // tone(A0, 294);
@@ -147,65 +88,151 @@ void loop()
   {
     skipQuestion();
   }
+  if (gameActive)
+  {
+    if (millis() - questionStartTime > questionTimeLimit)
+    {
+      skipQuestion();
+    }
+    else if (millis() - questionStartTime > warningTime)
+    {
+      blinkWarning();
+    }
+  }
 }
 
 void start()
 {
+  gameActive = true;
+  // randomizeQuestions();
   score = 0;
+  questionIndex = 0;
+  contador = 0;
   questionIndex = 0;
   skipsRemaining = 3;
   nextQuestion();
   tone(A0, 1000, 500);
+  delay(100);
 }
 
 void nextQuestion()
 {
 
   lcd.clear();
+  Serial.println(contador);
   lcd.setCursor(0, 0);
-  lcd.print(questions[questionIndex].question);
-  delay(1000);
-  int lengthOfQuestion = questions[questionIndex].question.length();
-  int scrollTimes = lengthOfQuestion > 16 ? lengthOfQuestion - 15 : 0;
-
-  for (int positionCounter = 0; positionCounter < scrollTimes; positionCounter++)
+  if (contador == 15)
   {
-    lcd.setCursor(0, 0);
-    lcd.scrollDisplayLeft();
-    delay(200);
-  }
+    lcd.print("Cor best team?");
 
-  delay(1000);
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Pontos: ");
-  lcd.print(score);
-  lcd.setCursor(0, 1);
-  lcd.print("Pulos: ");
-  lcd.print(skipsRemaining);
+    delay(1000);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Pontos: ");
+    lcd.print(score);
+    lcd.setCursor(0, 1);
+    lcd.print("Pulos: ");
+    lcd.print(skipsRemaining);
+  }
+  else
+  {
+    lcd.print(questions[questionIndex].question);
+    delay(1000);
+
+    int lengthOfQuestion = questions[questionIndex].question.length();
+    int scrollTimes = lengthOfQuestion > 16 ? lengthOfQuestion - 16 : 0;
+
+    for (int positionCounter = 0; positionCounter < scrollTimes; positionCounter++)
+    {
+      lcd.setCursor(0, 0);
+      lcd.scrollDisplayLeft();
+      delay(200);
+    }
+
+    delay(1000);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Pontos: ");
+    lcd.print(score);
+    lcd.setCursor(0, 1);
+    lcd.print("Pulos: ");
+    lcd.print(skipsRemaining);
+    questionStartTime = millis();
+  }
 }
 
 void checkAnswer(bool isTrue)
 {
+
+  if (gameActive)
+  {
+    if (questionIndex >= 15)
+    {
+      if (contador >= 15 && isTrue)
+      {
+        endGame(true);
+        return;
+      }
+      else
+      {
+        endGame(false);
+        return;
+      }
+    }
+  }
   if (questions[questionIndex].answer == isTrue)
   {
     score += questions[questionIndex].points;
+    tone(A0, 200);
+    delay(1000);
+    noTone(A0);
+
     questionIndex++;
-    nextQuestion();
+    contador++;
+    if (questionIndex > 15)
+    {
+      endGame(true); // Ganha se responder todas corretamente
+    }
+    else
+    {
+      nextQuestion();
+    }
   }
   else
   {
-    endGame(false);
+    tone(A0, 100);
+    delay(1000);
+    noTone(A0);
+    endGame(false); // Perde se errar qualquer pergunta
   }
 }
 
 void endGame(bool won)
 {
+  gameActive = false;
   lcd.clear();
   if (won)
   {
     lcd.print("Vitoria!");
-    playSound(4); // Som de vitória
+    tone(A0, 200);
+    delay(500);
+    tone(A0, 300);
+    delay(500);
+    tone(A0, 400);
+    delay(500);
+    tone(A0, 500);
+    delay(500);
+    tone(A0, 600);
+    delay(500);
+    tone(A0, 700);
+    delay(500);
+    tone(A0, 780);
+    delay(500);
+    tone(A0, 800);
+    delay(500);
+    tone(A0, 900);
+    delay(5000);
+    noTone(A0);
   }
   else
   {
@@ -213,7 +240,9 @@ void endGame(bool won)
     questionIndex = 0;
     score = 0;
     skipsRemaining = 3;
-    playSound(3); // Som de erro
+    tone(A0, 100);
+    delay(1000);
+    noTone(A0);
   }
   lcd.setCursor(0, 1);
   lcd.print("Pontuacao: ");
@@ -223,13 +252,18 @@ void endGame(bool won)
   lcd.print("Bem vindo!");
 }
 
-void playSound(int soundType)
-{
-  // soundType: 1 para acerto, 2 para pular, 3 para erro, 4 para vitória
-}
-
 void blinkWarning()
 {
+
+  digitalWrite(13, HIGH);
+  delay(100);
+  digitalWrite(13, LOW);
+  digitalWrite(13, HIGH);
+  delay(100);
+  digitalWrite(13, LOW);
+  digitalWrite(13, HIGH);
+  delay(100);
+  digitalWrite(13, LOW);
   digitalWrite(13, HIGH);
   delay(100);
   digitalWrite(13, LOW);
@@ -237,9 +271,12 @@ void blinkWarning()
 
 void skipQuestion()
 {
+  contador++;
   skipsRemaining--;
   questionIndex++;
   nextQuestion();
   tone(A0, 294);
+  delay(100);
+  noTone(A0);
   // Tocar som de pular (usando pino de som)
 }
