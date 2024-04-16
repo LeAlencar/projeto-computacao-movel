@@ -24,7 +24,9 @@ dito pelo compilador.
 
 ![Image](/.github/IMG_0595.png)
 ![Image](/.github/IMG_0594.png)
-![](/.github/IMG_0593.MOV)
+https://github.com/LeAlencar/projeto-computacao-movel/assets/52898510/1dac1ba3-c271-41e9-ad9d-ec3a18bb5b0d
+
+
 
 ## Conclusão
 
